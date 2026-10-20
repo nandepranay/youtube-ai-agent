@@ -26,8 +26,10 @@ class VideoMetadataResponse(BaseModel):
     duration: Optional[str] = None
     has_transcript: bool = False
     transcript_snippet: Optional[str] = None
+    transcript_status: Optional[str] = "Unavailable"
     analysis_source: str = "metadata_only"  # metadata_only | transcript_and_metadata
     error: Optional[str] = None
+
 
 # --- Comment Schemas ---
 class CommentCardDto(BaseModel):
@@ -43,6 +45,8 @@ class CommentCardDto(BaseModel):
     language: Optional[str] = "en"  # en | hi | hinglish
     created_at: Optional[str] = None
     publication_status: str = "Draft"
+    provider: Optional[str] = None
+    model: Optional[str] = None
 
 class GenerateCommentsRequest(BaseModel):
     video_urls: List[str]
@@ -56,7 +60,9 @@ class GenerateCommentsResponse(BaseModel):
     success: bool
     comments: List[CommentCardDto]
     analysis_summary: str
-    mode: str = "live"  # live | demo
+    mode: str = "live"  # ollama | openai | demo
+    provider: Optional[str] = "ollama"
+    model: Optional[str] = "qwen2.5:7b"
 
 class PublishCommentRequest(BaseModel):
     comment_id: Optional[int] = None
@@ -122,6 +128,9 @@ class ChatResponse(BaseModel):
     attached_videos: List[VideoMetadataResponse]
     generated_comments: List[CommentCardDto]
     is_demo: bool = False
+    provider: Optional[str] = "ollama"
+    model: Optional[str] = "qwen2.5:7b"
+
 
 # --- Account Schemas ---
 class AccountDto(BaseModel):
@@ -170,9 +179,37 @@ class QueueItemResponse(BaseModel):
 class HealthResponse(BaseModel):
     status: str
     demo_mode: bool
-    openai_configured: bool
-    youtube_configured: bool
-    google_oauth_configured: bool
+    ai_provider: str = "ollama"
+    ollama_configured: bool = False
+    ollama_model: str = "qwen2.5:7b"
+    ollama_base_url: str = "http://localhost:11434"
+    openai_configured: bool = False
+    youtube_configured: bool = False
+    google_oauth_configured: bool = False
     connected_accounts_count: int
     app_name: str = "TubePilot AI"
     version: str = "1.0.0"
+
+# --- AI Provider & Connection Testing Schemas ---
+class AITestConnectionRequest(BaseModel):
+    provider: Optional[str] = "ollama"
+    base_url: Optional[str] = None
+    model: Optional[str] = None
+
+class AITestConnectionResponse(BaseModel):
+    success: bool
+    provider: str
+    model: str
+    base_url: Optional[str] = None
+    message: Optional[str] = None
+    error: Optional[str] = None
+    latency_ms: Optional[int] = None
+    available_models: Optional[List[str]] = None
+    models_available: Optional[List[str]] = None
+
+class AIProviderSettingsUpdate(BaseModel):
+    provider: str  # ollama | openai | demo
+    ollama_base_url: Optional[str] = None
+    ollama_model: Optional[str] = None
+    openai_model: Optional[str] = None
+

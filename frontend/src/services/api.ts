@@ -6,7 +6,9 @@ import {
   ChatSessionItem,
   AccountData,
   QueueItem,
-  CommentHistoryItem
+  CommentHistoryItem,
+  AISettings,
+  AITestResult
 } from '../types';
 
 const BASE_URL = '';
@@ -38,6 +40,21 @@ export const api = {
   // Health
   getHealth: () => fetchJson<HealthData>('/health'),
 
+  // AI Provider & Settings
+  getAISettings: () => fetchJson<AISettings>('/api/ai/settings'),
+
+  updateAISettings: (data: { provider?: string; ollama_base_url?: string; ollama_model?: string }) =>
+    fetchJson<{ success: boolean; message: string; settings: AISettings }>('/api/ai/settings', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    }),
+
+  testAIConnection: (data?: { provider?: string; base_url?: string; model?: string }) =>
+    fetchJson<AITestResult>('/api/ai/test-connection', {
+      method: 'POST',
+      body: JSON.stringify(data || {})
+    }),
+
   // Video
   validateVideo: (url: string) =>
     fetchJson<{ is_valid: boolean; video_id?: string; normalized_url?: string; error?: string }>(
@@ -67,6 +84,8 @@ export const api = {
       attached_videos: VideoMetadata[];
       generated_comments: CommentCardData[];
       is_demo: boolean;
+      provider?: string;
+      model?: string;
     }>('/api/chat', {
       method: 'POST',
       body: JSON.stringify({

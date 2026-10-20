@@ -83,29 +83,38 @@ class YouTubeService:
             except Exception as e:
                 logger.info(f"oEmbed fetch skipped or failed for {video_id}: {e}")
 
+        transcript_status = "Not requested"
         # 3. Fetch captions / transcript when requested
         if fetch_transcript:
             try:
-                # youtube_transcript_api supports fetching by video id
                 transcript_list = YouTubeTranscriptApi.get_transcript(video_id, languages=['en', 'hi', 'en-IN'])
                 if transcript_list:
-                    # Collect first 1200 words / snippets
                     text_parts = [t.get("text", "") for t in transcript_list[:100]]
                     combined = " ".join(text_parts)
                     transcript_snippet = combined[:2000]
                     has_transcript = True
+                    transcript_status = "Available (captions extracted)"
                     analysis_source = "transcript_and_metadata"
-            except (TranscriptsDisabled, NoTranscriptFound):
+                else:
+                    has_transcript = False
+                    transcript_status = "Unavailable (empty transcript)"
+                    analysis_source = "metadata_only"
+            except TranscriptsDisabled:
                 has_transcript = False
+                transcript_status = "Unavailable (captions disabled by video creator)"
+                analysis_source = "metadata_only"
+            except NoTranscriptFound:
+                has_transcript = False
+                transcript_status = "Unavailable (no captions found for this video)"
                 analysis_source = "metadata_only"
             except Exception as e:
                 logger.debug(f"Captions unavailable for {video_id}: {e}")
                 has_transcript = False
+                transcript_status = f"Unavailable (transcript access failed: {type(e).__name__})"
                 analysis_source = "metadata_only"
 
         # If completely mock/demo and no metadata could be extracted
         if title == "YouTube Video" and not error_msg:
-            # Fallback mock friendly metadata for demonstration
             title = f"Engaging Content Showcase #{video_id[:6]}"
             channel_title = "Creator Studio Channel"
             description = "A video discussing creative insights, design craft, and community feedback."
@@ -121,9 +130,11 @@ class YouTubeService:
             "duration": duration,
             "has_transcript": has_transcript,
             "transcript_snippet": transcript_snippet,
+            "transcript_status": transcript_status,
             "analysis_source": analysis_source,
             "error": error_msg
         }
+
 
     async def publish_comment(
         self,

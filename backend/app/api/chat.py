@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import desc
 
+from app.config import settings
 from app.database.connection import get_db
 from app.models.models import ChatSession, ChatMessage, CommentRecord
 from app.schemas.schemas import ChatRequest, ChatResponse, VideoMetadataResponse, CommentCardDto
@@ -130,8 +131,11 @@ async def chat_endpoint(req: ChatRequest, db: Session = Depends(get_db)):
         reply=reply_text,
         attached_videos=[VideoMetadataResponse(**v) for v in attached_videos_data],
         generated_comments=formatted_cards,
-        is_demo=is_demo
+        is_demo=is_demo,
+        provider=ai_res.get("provider", settings.AI_PROVIDER),
+        model=ai_res.get("model", settings.OLLAMA_MODEL if settings.AI_PROVIDER == "ollama" else settings.OPENAI_MODEL)
     )
+
 
 @router.get("/sessions")
 def list_chat_sessions(db: Session = Depends(get_db)):

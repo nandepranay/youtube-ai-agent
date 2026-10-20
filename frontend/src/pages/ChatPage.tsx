@@ -157,7 +157,9 @@ export const ChatPage: React.FC<ChatPageProps> = ({
         role: 'assistant',
         content: res.reply,
         attached_videos: res.attached_videos,
-        generated_comments: res.generated_comments
+        generated_comments: res.generated_comments,
+        provider: res.provider || (res.is_demo ? 'demo' : health?.ai_provider || 'ollama'),
+        model: res.model || (health?.ai_provider === 'ollama' ? health?.ollama_model || 'qwen2.5:7b' : undefined)
       };
 
       setMessages((prev) => [...prev, assistantMessage]);
@@ -284,7 +286,28 @@ export const ChatPage: React.FC<ChatPageProps> = ({
                     </div>
                     <div className="flex-1 space-y-3">
                       <div className="rounded-2xl border border-slate-200/80 bg-white px-4 py-3 text-xs text-slate-800 shadow-xs leading-relaxed">
-                        {msg.content}
+                        <div className="flex items-center justify-between gap-2 mb-2 pb-2 border-b border-slate-100">
+                          <span className="font-semibold text-slate-900 text-[11px] flex items-center gap-1.5">
+                            <Sparkles className="h-3 w-3 text-indigo-600" />
+                            <span>AI Assistant</span>
+                          </span>
+                          {msg.provider === 'ollama' && (
+                            <span className="rounded-full bg-indigo-50 border border-indigo-200 px-2 py-0.5 text-[10px] font-semibold text-indigo-700">
+                              Ollama ({msg.model || 'qwen2.5:7b'})
+                            </span>
+                          )}
+                          {msg.provider === 'openai' && (
+                            <span className="rounded-full bg-emerald-50 border border-emerald-200 px-2 py-0.5 text-[10px] font-medium text-emerald-700">
+                              OpenAI ({msg.model || 'gpt-4o-mini'})
+                            </span>
+                          )}
+                          {msg.provider === 'demo' && (
+                            <span className="rounded-full bg-amber-50 border border-amber-200 px-2 py-0.5 text-[10px] font-medium text-amber-700">
+                              Demo Mode
+                            </span>
+                          )}
+                        </div>
+                        <p className="whitespace-pre-wrap">{msg.content}</p>
                       </div>
 
                       {/* Render Generated Comments */}
@@ -312,11 +335,15 @@ export const ChatPage: React.FC<ChatPageProps> = ({
             {isLoading && (
               <div className="flex items-center gap-3">
                 <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-900 border border-slate-200">
-                  <Sparkles className="h-4 w-4 text-emerald-600 animate-pulse" />
+                  <Sparkles className="h-4 w-4 text-indigo-600 animate-pulse" />
                 </div>
                 <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-xs text-slate-500 shadow-xs">
-                  <Loader2 className="h-4 w-4 animate-spin text-slate-600" />
-                  <span>Analyzing video content and generating natural comments...</span>
+                  <Loader2 className="h-4 w-4 animate-spin text-indigo-600" />
+                  <span>
+                    {health?.ai_provider === 'ollama'
+                      ? `Querying local Ollama (${health?.ollama_model || 'qwen2.5:7b'}) & analyzing content...`
+                      : 'Analyzing video content and generating natural comments...'}
+                  </span>
                 </div>
               </div>
             )}
@@ -339,12 +366,22 @@ export const ChatPage: React.FC<ChatPageProps> = ({
                 >
                   <YouTubeIcon className="h-3 w-3 text-red-500" />
                   <span className="truncate max-w-[150px] font-medium">{v.title}</span>
-                  <span className="text-[10px] text-slate-400">
-                    ({v.analysis_source.replace('_', ' ')})
-                  </span>
+                  {v.has_transcript ? (
+                    <span className="rounded bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 text-[9px] font-semibold text-emerald-700">
+                      Captions Ready
+                    </span>
+                  ) : (
+                    <span
+                      className="rounded bg-amber-50 border border-amber-200 px-1.5 py-0.5 text-[9px] font-medium text-amber-700"
+                      title={v.transcript_status || 'Captions unavailable - metadata only will be analyzed'}
+                    >
+                      Metadata Only
+                    </span>
+                  )}
                   <button
                     onClick={() => handleRemoveVideo(v.video_id)}
                     className="ml-0.5 rounded text-slate-400 hover:text-slate-700"
+                    title="Remove video"
                   >
                     <X className="h-3 w-3" />
                   </button>

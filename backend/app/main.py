@@ -81,6 +81,10 @@ def health_check(db: Session = Depends(get_db)):
     return HealthResponse(
         status="healthy",
         demo_mode=settings.is_demo_mode,
+        ai_provider=settings.AI_PROVIDER,
+        ollama_configured=settings.has_ollama,
+        ollama_model=settings.OLLAMA_MODEL,
+        ollama_base_url=settings.OLLAMA_BASE_URL,
         openai_configured=settings.has_openai,
         youtube_configured=settings.has_youtube,
         google_oauth_configured=settings.has_google_oauth,
@@ -88,6 +92,7 @@ def health_check(db: Session = Depends(get_db)):
         app_name="TubePilot AI",
         version="1.0.0"
     )
+
 
 if __name__ == "__main__":
     import uvicorn

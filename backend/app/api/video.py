@@ -49,6 +49,7 @@ async def analyze_video(req: VideoAnalyzeRequest):
         duration=meta.get("duration"),
         has_transcript=meta.get("has_transcript", False),
         transcript_snippet=meta.get("transcript_snippet"),
+        transcript_status=meta.get("transcript_status", "Unavailable"),
         analysis_source=meta.get("analysis_source", "metadata_only"),
         error=meta.get("error")
     )

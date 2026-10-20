@@ -53,6 +53,15 @@ function AppLayout() {
     setToast({ message, type });
   };
 
+  const refreshHealth = async () => {
+    try {
+      const hData = await api.getHealth();
+      setHealth(hData);
+    } catch (e) {
+      console.error('Failed to refresh health:', e);
+    }
+  };
+
   const refreshAccounts = async () => {
     try {
       const accData = await api.getAccounts();
@@ -180,7 +189,7 @@ function AppLayout() {
             />
             <Route
               path="/settings"
-              element={<SettingsPage health={health} showToast={showToast} />}
+              element={<SettingsPage health={health} refreshHealth={refreshHealth} showToast={showToast} />}
             />
           </Routes>
         </main>

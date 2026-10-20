@@ -297,3 +297,38 @@ async def test_youtube_api_failure_handling(client, db_session):
             assert saved_draft is not None
             assert saved_draft.publication_status == "Failed"
             assert "Comments are disabled" in saved_draft.error_message
+
+
+# 12. Test Ollama AI Provider Settings & Test Connection
+def test_ollama_ai_provider_settings_and_test_connection(client):
+    # Test GET /api/ai/settings
+    settings_res = client.get("/api/ai/settings")
+    assert settings_res.status_code == 200
+    s_data = settings_res.json()
+    assert "ollama_base_url" in s_data
+    assert "ollama_model" in s_data
+    assert s_data["ollama_model"] == "qwen2.5:7b"
+
+    # Test POST /api/ai/test-connection with mock
+    with patch("app.services.ai_service.ai_service.test_ollama_connection") as mock_test:
+        mock_test.return_value = {
+            "success": True,
+            "provider": "ollama",
+            "model": "qwen2.5:7b",
+            "available_models": ["qwen2.5:7b"],
+            "message": "Successfully connected to Ollama at http://localhost:11434. Model 'qwen2.5:7b' is ready.",
+            "latency_ms": 45
+        }
+        test_res = client.post("/api/ai/test-connection", json={"provider": "ollama", "base_url": "http://localhost:11434", "model": "qwen2.5:7b"})
+        assert test_res.status_code == 200
+        t_data = test_res.json()
+        assert t_data["success"] is True
+        assert t_data["model"] == "qwen2.5:7b"
+        assert t_data["latency_ms"] == 45
+        assert "qwen2.5:7b" in t_data["models_available"]
+
+    # Test updating settings
+    update_res = client.post("/api/ai/settings", json={"provider": "ollama", "ollama_model": "qwen2.5:7b"})
+    assert update_res.status_code == 200
+    assert update_res.json()["success"] is True
+

@@ -7,6 +7,7 @@ export interface VideoMetadata {
   thumbnail_url?: string;
   published_at?: string;
   duration?: string;
+  transcript_status?: string;
   has_transcript: boolean;
   transcript_snippet?: string;
   analysis_source: 'metadata_only' | 'transcript_and_metadata';
@@ -26,6 +27,8 @@ export interface CommentCardData {
   language?: string;
   created_at?: string;
   publication_status: 'Draft' | 'Awaiting Approval' | 'Published' | 'Failed';
+  provider?: string;
+  model?: string;
 }
 
 export interface ChatMessage {
@@ -35,6 +38,8 @@ export interface ChatMessage {
   attached_videos?: VideoMetadata[];
   generated_comments?: CommentCardData[];
   created_at?: string;
+  provider?: string;
+  model?: string;
 }
 
 export interface ChatSessionItem {
@@ -97,6 +102,10 @@ export interface CommentHistoryItem {
 export interface HealthData {
   status: string;
   demo_mode: boolean;
+  ai_provider?: string;
+  ollama_configured?: boolean;
+  ollama_model?: string;
+  ollama_base_url?: string;
   openai_configured: boolean;
   youtube_configured: boolean;
   google_oauth_configured: boolean;
@@ -104,3 +113,23 @@ export interface HealthData {
   app_name: string;
   version: string;
 }
+
+export interface AISettings {
+  provider: 'ollama' | 'openai' | 'demo';
+  ollama_base_url: string;
+  ollama_model: string;
+  has_openai: boolean;
+  has_ollama: boolean;
+  available_models?: string[];
+}
+
+export interface AITestResult {
+  success: boolean;
+  provider: string;
+  model: string;
+  base_url?: string;
+  message: string;
+  latency_ms?: number;
+  models_available?: string[];
+}
+

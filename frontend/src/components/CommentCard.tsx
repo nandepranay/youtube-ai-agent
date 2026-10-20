@@ -77,7 +77,24 @@ export const CommentCard: React.FC<CommentCardProps> = ({
           </div>
         </div>
 
-        <div className="flex items-center gap-1.5 shrink-0">
+        <div className="flex flex-wrap items-center gap-1.5 shrink-0 justify-end">
+          {/* AI Provider Badge */}
+          {comment.provider === 'ollama' && (
+            <span className="rounded-full bg-indigo-50 border border-indigo-200 px-2 py-0.5 text-[10px] font-semibold text-indigo-700">
+              Ollama ({comment.model || 'qwen2.5:7b'})
+            </span>
+          )}
+          {comment.provider === 'openai' && (
+            <span className="rounded-full bg-emerald-50 border border-emerald-200 px-2 py-0.5 text-[10px] font-medium text-emerald-700">
+              OpenAI ({comment.model || 'gpt-4o-mini'})
+            </span>
+          )}
+          {comment.provider === 'demo' && (
+            <span className="rounded-full bg-amber-50 border border-amber-200 px-2 py-0.5 text-[10px] font-medium text-amber-700">
+              Demo Generator
+            </span>
+          )}
+
           {/* Analysis Source Badge */}
           <span
             className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${

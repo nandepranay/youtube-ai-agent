@@ -5,8 +5,10 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from sqlalchemy import desc
 
+from app.config import settings
 from app.database.connection import get_db
 from app.models.models import CommentRecord, VideoQueueItem
+
 from app.schemas.schemas import (
     GenerateCommentsRequest,
     GenerateCommentsResponse,
@@ -80,8 +82,11 @@ async def generate_comments_endpoint(req: GenerateCommentsRequest, db: Session =
         success=True,
         comments=persisted_comments,
         analysis_summary=ai_result["analysis_summary"],
-        mode=ai_result.get("mode", "live")
+        mode=ai_result.get("mode", "live"),
+        provider=ai_result.get("mode", settings.AI_PROVIDER),
+        model=ai_result.get("model", settings.OLLAMA_MODEL if settings.AI_PROVIDER == "ollama" else settings.OPENAI_MODEL)
     )
+
 
 @router.post("/publish", response_model=PublishCommentResponse)
 async def publish_comment_endpoint(req: PublishCommentRequest, db: Session = Depends(get_db)):
